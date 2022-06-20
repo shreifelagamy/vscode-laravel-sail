@@ -2,10 +2,16 @@
     "name": "laravel-sail",
 	"displayName": "laravel-sail",
 	"description": "support laravel sail",
+    "icon": "images/icon.png",
+    "publisher": "shashraf",
 	"version": "0.0.1",
 	"engines": {
 		"vscode": "^1.66.0"
 	},
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/shreifelagamy/vscode-laravel-sail"
+    },
 	"categories": [
 		"Other"
 	],
@@ -20,8 +26,16 @@
 				"title": "Laravel Sail: Start"
 			},
             {
+				"command": "larave-sail.startDetachedSail",
+				"title": "Laravel Sail: Start Detached"
+			},
+            {
 				"command": "larave-sail.stopSail",
 				"title": "Laravel Sail: Stop"
+			},
+            {
+				"command": "larave-sail.routeList",
+				"title": "Laravel Sail: Route list"
 			}
 		]
 	},
