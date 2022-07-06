@@ -1,18 +1,22 @@
 import { ViewColumn, WebviewPanel, window, workspace } from "vscode";
 import Common from "../../Common";
+import Output from "../../utils/Output";
 
 export default class Route extends Common {
     private static list: string = `route:list -v --json`
     private static timeout: NodeJS.Timer
     private static currentPanel: WebviewPanel | undefined = undefined;
+    private static records: any
+    private static intervalOn: boolean = false
 
     public static async run() {
         this.execArtisanCmd(this.list, async (info) => {
             if (info.err) {
                 return this.showError('The route list could not be generated', info.err)
             } else {
-                let data = this.parseJson(info.stdout)
-                await this.openVirtualHtmlFile('route-list', 'Route List', data.headers, data.rows)
+                this.parseJson(info.stdout)
+                await this.openVirtualHtmlFile('route-list', 'Route List')
+                this.ping();
             }
         })
     }
@@ -35,7 +39,7 @@ export default class Route extends Common {
             rows.push(arr);
         })
 
-        return { headers, rows };
+        this.records = { headers, rows };
     }
 
     private static get tableStyle(): string {
@@ -75,30 +79,10 @@ export default class Route extends Common {
             line-height: 1.5;
             border-radius: 0.25rem;
           }
-          .reload-btn:active {
-            olor: #fff;
-            background-color: #1e7e34;
-            border-color: #1c7430;
-          }
         </style>`
     }
 
-    protected static async openVirtualHtmlFile(openPath: string, title: string, headers: string[], rows: string[][]) {
-        let headerRows: string = '<tr>';
-        headers.forEach(header => {
-            headerRows += '<th>' + header + '</th>'
-        })
-        headerRows += '</tr>';
-
-        let bodyRows: string = '';
-        rows.forEach(row => {
-            bodyRows += '<tr>'
-            row.forEach(item => {
-                bodyRows += '<td>' + item + '</td>'
-            })
-            bodyRows += '</tr>'
-        })
-
+    protected static async openVirtualHtmlFile(openPath: string, title: string) {
         const columnToShowIn = window.activeTextEditor
             ? window.activeTextEditor.viewColumn
             : undefined;
@@ -110,15 +94,21 @@ export default class Route extends Common {
                 enableScripts: true,
                 retainContextWhenHidden: true
             })
-            this.currentPanel.webview.html = this.getWebViewContent(headerRows, bodyRows)
+            this.currentPanel.webview.html = this.getWebViewContent()
             this.currentPanel.webview.onDidReceiveMessage(async msg => {})
+            this.currentPanel.onDidDispose(() => {
+                console.log('disposaling');
 
+                clearInterval(this.timeout)
+                this.intervalOn = false;
+                this.currentPanel = undefined
+            })
         }
 
         return this.currentPanel
     }
 
-    private static getWebViewContent(tableHeader: string, tableBody: string) {
+    private static getWebViewContent(): string {
         return `
         <!DOCTYPE html>
         <html lang="en">
@@ -134,14 +124,13 @@ export default class Route extends Common {
             <body>
                 <div class="search">
                     <input type="text" id="filter" placeholder="Search for an item (RegExp Supported)">
-                    <button class="reload-btn">Reload</button>
                 </div>
                 <table>
                     <thead>
-                        ${tableHeader}
+                        ${this.drawHeaders}
                     </thead>
                     <tbody>
-                        ${tableBody}
+                        ${this.drawRows}
                     </tbody>
                 </table>
                 <script>
@@ -156,45 +145,88 @@ export default class Route extends Common {
                             let txt = row.textContent
                             let reg = new RegExp(v, 'ig')
                             if (reg.test(txt) || v.length == 0) {
-                            row.classList.remove('hidden')
+                                row.classList.remove('hidden')
                             } else {
-                            row.classList.add('hidden')
+                                row.classList.add('hidden')
                             }
                         })
                     }
                     function routeEvents(){
-                    Array.from(body.querySelectorAll('a')).forEach(item => {
-                        item.addEventListener('click', e => {
-                        e.preventDefault()
-                        let target = e.currentTarget
-                        vscode.postMessage({ file: target.href, method: target.getAttribute('data-method') })
+                        Array.from(body.querySelectorAll('a')).forEach(item => {
+                            item.addEventListener('click', e => {
+                                e.preventDefault()
+                                let target = e.currentTarget
+                                vscode.postMessage({ file: target.href, method: target.getAttribute('data-method') })
+                            })
                         })
-                    })
                     }
                     filter.addEventListener('input', filterItems)
                     window.addEventListener('message', msg => {
-                    let rows = msg.data.rows
-                    let html = ''
-                    rows.forEach(row => {
-                        html += '<tr>'
-                        row.forEach(item => {
-                        if (item.match(/app\\\\/i)) {
-                            let file = \`\${rootPath}/\${item.replace(/@.+$/, '').replace(/^App/, 'app')}.php\`.replace(/\\\\/g, '/')
-                            html += \`<td><a href="\${file}" data-method="\${item.replace(/^.+@/, '')}" class="app-item">\` + item + '</a></td>'
-                        } else {
-                            html += '<td>' + item + '</td>'
-                        }
+                        let rows = msg.data.rows
+                        let html = ''
+                        rows.forEach(row => {
+                            html += '<tr>'
+                            row.forEach(item => {
+                            if (item.match(/app\\\\/i)) {
+                                let file = \`\${rootPath}/\${item.replace(/@.+$/, '').replace(/^App/, 'app')}.php\`.replace(/\\\\/g, '/')
+                                html += \`<td><a href="\${file}" data-method="\${item.replace(/^.+@/, '')}" class="app-item">\` + item + '</a></td>'
+                            } else {
+                                html += '<td>' + item + '</td>'
+                            }
+                            })
+                            html += '</tr>'
                         })
-                        html += '</tr>'
-                    })
-                    body.innerHTML = html
-                    filterItems()
-                    routeEvents()
+                        body.innerHTML = html
+                        filterItems()
+                        routeEvents()
                     })
                     routeEvents()
                 </script>
             </body>
         </html>
         `
+    }
+
+    private static get drawHeaders(): string {
+        let headerRows: string = '<tr>';
+        this.records.headers.forEach((header: string) => {
+            headerRows += '<th>' + header + '</th>'
+        })
+        headerRows += '</tr>';
+
+        return headerRows;
+    }
+
+    private static get drawRows(): string {
+        let bodyRows: string = '';
+        this.records.rows.forEach((row: string[]) => {
+            bodyRows += '<tr>'
+            row.forEach((item: string) => {
+                bodyRows += '<td>' + item + '</td>'
+            })
+            bodyRows += '</tr>'
+        })
+
+        return bodyRows;
+    }
+
+    private static ping() {
+        if(this.currentPanel !== undefined && this.intervalOn === false) {
+            let running = false
+            let {currentPanel, getWebViewContent, list} = this
+            this.timeout = setInterval(() => {
+                this.execArtisanCmd(list, async (info) => {
+                    if (info.err) {
+                        return this.showError('The route list could not be generated', info.err)
+                    } else {
+                        this.parseJson(info.stdout)
+
+                        currentPanel.webview.html = this.getWebViewContent()
+                    }
+                })
+
+                this.intervalOn = true
+            }, 5000);
+        }
     }
 }
