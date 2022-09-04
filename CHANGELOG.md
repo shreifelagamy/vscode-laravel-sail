@@ -6,4 +6,9 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
-- Initial release
+## [0.0.4] - 2022-09-04
+### Added
+- support laravel sail share command
+### Changed
+- depend on vscode running tasks instead of commands
+- show progress bar while loadin routes

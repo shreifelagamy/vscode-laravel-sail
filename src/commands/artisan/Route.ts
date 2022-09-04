@@ -1,6 +1,5 @@
-import { ViewColumn, WebviewPanel, window, workspace } from "vscode";
+import { ProgressLocation, ViewColumn, WebviewPanel, window, workspace } from "vscode";
 import Common from "../../Common";
-import Output from "../../utils/Output";
 
 export default class Route extends Common {
     private static list: string = `route:list -v --json`
@@ -10,15 +9,28 @@ export default class Route extends Common {
     private static intervalOn: boolean = false
 
     public static async run() {
-        this.execArtisanCmd(this.list, async (info) => {
-            if (info.err) {
-                return this.showError('The route list could not be generated', info.err)
-            } else {
-                this.parseJson(info.stdout)
-                await this.openVirtualHtmlFile('route-list', 'Route List')
-                this.ping();
-            }
+        window.withProgress({
+            cancellable: false,
+            location: ProgressLocation.Notification,
+            title: "Loading route list"
+        }, (progress, token) => {
+            const p = new Promise<void>(resolve => {
+                this.execArtisanCmd(this.list, async (info) => {
+                    if (info.err) {
+                        return this.showError('The route list could not be generated', info.err)
+                    } else {
+                        this.parseJson(info.stdout)
+                        await this.openVirtualHtmlFile('route-list', 'Route List')
+                        this.ping();
+
+                    }
+                    resolve();
+                })
+            })
+
+            return p;
         })
+
     }
 
     protected static parseJson(jsonData: string) {
@@ -95,7 +107,7 @@ export default class Route extends Common {
                 retainContextWhenHidden: true
             })
             this.currentPanel.webview.html = this.getWebViewContent()
-            this.currentPanel.webview.onDidReceiveMessage(async msg => {})
+            this.currentPanel.webview.onDidReceiveMessage(async msg => { })
             this.currentPanel.onDidDispose(() => {
                 console.log('disposaling');
 
@@ -211,9 +223,9 @@ export default class Route extends Common {
     }
 
     private static ping() {
-        if(this.currentPanel !== undefined && this.intervalOn === false) {
+        if (this.currentPanel !== undefined && this.intervalOn === false) {
             let running = false
-            let {currentPanel, getWebViewContent, list} = this
+            let { currentPanel, getWebViewContent, list } = this
             this.timeout = setInterval(() => {
                 this.execArtisanCmd(list, async (info) => {
                     if (info.err) {

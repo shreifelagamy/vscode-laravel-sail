@@ -26,16 +26,16 @@
                 "title": "Laravel Sail: Start"
             },
             {
-                "command": "larave-sail.startDetachedSail",
-                "title": "Laravel Sail: Start Detached"
-            },
-            {
                 "command": "larave-sail.stopSail",
                 "title": "Laravel Sail: Stop"
             },
             {
                 "command": "larave-sail.routeList",
                 "title": "Laravel Sail: Route list"
+            },
+            {
+                "command": "larave-sail.share",
+                "title": "Laravel Sail: Share"
             }
         ]
     },

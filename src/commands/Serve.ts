@@ -1,5 +1,6 @@
-import { Terminal, window } from "vscode"
+import { Terminal, window, workspace } from "vscode"
 import Common from "../Common"
+import { executeAsTask } from "../utils/ExecuteAsTask"
 
 export default class Server extends Common {
     private static terminal: Terminal
@@ -7,31 +8,10 @@ export default class Server extends Common {
     private static port: string
 
     public static async run() {
-        if (Server.terminal) {
-            Server.terminal.dispose()
-        }
-
-        Server.terminal = window.createTerminal("Laravel Sail")
-        await Server.terminal.sendText("./vendor/bin/sail up")
-        Server.terminal.show()
+        await executeAsTask("./vendor/bin/sail up", "Sail up", { focus: true, workspaceFolder: workspace.workspaceFolders[0] });
     }
-
 
     public static async stop() {
-        if (Server.terminal) {
-            Server.terminal.dispose()
-        }
-        Server.terminal = window.createTerminal("Laravel Sail")
-        Server.terminal.show()
-
-        Server.terminal.sendText("./vendor/bin/sail down")
-    }
-
-    public static async runDetached() {
-        this.execCmd('up -d', async (info) => {
-            if (info.err) {
-                return this.showError('The route list could not be generated', info.err)
-            }
-        })
+        await executeAsTask("./vendor/bin/sail down", "Sail Down", { focus: true, workspaceFolder: workspace.workspaceFolders[0] });
     }
 }

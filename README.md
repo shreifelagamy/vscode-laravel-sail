@@ -1,6 +1,14 @@
 # laravel-sail README
 
-Support Laravel Sail commands within Visual Studio Code
+Support you using Laravel Sail commands within Visual Studio Code
 ## Features
-    - Laravel sail start server
-    - Laravel sail stop server
+Sail:
+
+    - Laravel sail start
+    - Laravel sail stop
+    - Laravel sail share
+Route:
+
+    - Laravel sail route list
+
+    
