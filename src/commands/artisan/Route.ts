@@ -10,7 +10,7 @@ export default class Route extends Common {
 
     public static async run() {
         window.withProgress({
-            cancellable: false,
+            cancellable: true,
             location: ProgressLocation.Notification,
             title: "Loading route list"
         }, (progress, token) => {

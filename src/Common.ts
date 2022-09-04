@@ -66,5 +66,4 @@ export default class Common {
         window.showErrorMessage(message)
         return false
     }
-
 }
