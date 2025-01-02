@@ -1,6 +1,6 @@
 {
     "name": "laravel-sail",
-    "displayName": "laravel-sail",
+    "displayName": "laravel Sail",
     "description": "support laravel sail",
     "icon": "images/icon.png",
     "publisher": "shashraf",
@@ -22,6 +22,11 @@
     "contributes": {
         "commands": [
             {
+                "command": "laravelSail.refresh",
+                "title": "Refresh",
+                "icon": "$(refresh)"
+            },
+            {
                 "command": "larave-sail.startSail",
                 "title": "Laravel Sail: Start"
             },
@@ -36,8 +41,39 @@
             {
                 "command": "larave-sail.share",
                 "title": "Laravel Sail: Share"
+            },
+            {
+                "command": "laravelSail.delete",
+                "title": "Laravel Sail: Delete"
             }
-        ]
+        ],
+        "viewsContainers": {
+            "activitybar": [
+                {
+                    "id": "laravel-sail",
+                    "title": "Laravel Sail",
+                    "icon": "images/logo-activitybar.png"
+                }
+            ]
+        },
+        "views": {
+            "laravel-sail": [
+                {
+                    "id": "laravel-sail-main",
+                    "name": "Laravel Sail",
+                    "type": "webview"
+                }
+            ]
+        },
+        "menus": {
+            "view/title": [
+                {
+                    "command": "laravelSail.refresh",
+                    "when": "view == laravel-sail-main",
+                    "group": "navigation"
+                }
+            ]
+        }
     },
     "scripts": {
         "vscode:prepublish": "npm run package",
@@ -51,19 +87,22 @@
         "test": "node ./out/test/runTest.js"
     },
     "devDependencies": {
-        "@types/vscode": "^1.66.0",
         "@types/glob": "^7.2.0",
         "@types/mocha": "^9.1.0",
         "@types/node": "14.x",
+        "@types/vscode": "^1.66.0",
         "@typescript-eslint/eslint-plugin": "^5.16.0",
         "@typescript-eslint/parser": "^5.16.0",
+        "@vscode/test-electron": "^2.1.3",
         "eslint": "^8.11.0",
         "glob": "^7.2.0",
         "mocha": "^9.2.2",
-        "typescript": "^4.5.5",
         "ts-loader": "^9.2.8",
+        "typescript": "^4.5.5",
         "webpack": "^5.70.0",
-        "webpack-cli": "^4.9.2",
-        "@vscode/test-electron": "^2.1.3"
+        "webpack-cli": "^4.9.2"
+    },
+    "dependencies": {
+        "@vscode/codicons": "^0.0.36"
     }
 }
