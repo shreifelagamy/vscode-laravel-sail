@@ -1,0 +1,45 @@
+p {
+    font-size: 13px;
+    color: rgb(195, 198, 204);
+    line-height: 1.2rem;
+    margin-block-end: 0;
+}
+
+.button {
+    margin-block-start: 1em;
+    background-color: var(--vscode-button-background);
+    color: var(--vscode-button-foreground);
+    border: 1px solid var(--vscode-button-border);
+    padding: 6px 10px;
+    border-radius: 2px;
+    cursor: pointer;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.button:hover {
+    background-color: var(--vscode-button-hoverBackground);
+}
+
+.codicon {
+    margin-right: 5px;
+}
+
+.container {
+    margin-block-start: 1em;
+    background-color: var(--vscode-button-background);
+    color: var(--vscode-button-foreground);
+    border: 1px solid var(--vscode-button-border);
+    padding: 7px 10px;
+    border-radius: 2px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.running {
+    color: green;
+}

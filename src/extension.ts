@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import Server from './commands/Serve';
 import Share from './commands/Share';
 import Route from './commands/artisan/Route';
+import { ContainersTreeViewProvider } from './providers/ContainersTreeViewProvider';
 import { SailSidebarProvider } from './providers/SailSidebarProvider';
 import { runTaskWithProgress } from './utils';
 
@@ -30,6 +31,9 @@ export function activate(context: vscode.ExtensionContext) {
             provider.refresh();
         })
     );
+
+    const treeViewProvider = new ContainersTreeViewProvider();
+    vscode.window.createTreeView('laravel-sail-containers', { treeDataProvider: treeViewProvider });
 }
 
 // this method is called when your extension is deactivated

@@ -62,6 +62,11 @@
                     "id": "laravel-sail-main",
                     "name": "Laravel Sail",
                     "type": "webview"
+                },
+                {
+                    "id": "laravel-sail-containers",
+                    "name": "containers",
+                    "type": "tree"
                 }
             ]
         },
@@ -73,6 +78,17 @@
                     "group": "navigation"
                 }
             ]
+        },
+        "configuration": {
+            "type": "object",
+            "title": "Laravel Sail Configuration",
+            "properties": {
+                "laravelSail.phpPath": {
+                    "type": "string",
+                    "default": "php",
+                    "description": "Path to the PHP executable"
+                }
+            }
         }
     },
     "scripts": {
