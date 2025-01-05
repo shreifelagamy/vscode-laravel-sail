@@ -1,17 +1,26 @@
 import * as vscode from 'vscode';
-import { isLaravelProject, isSailInstalled, runCommand, runTask, runTaskWithProgress } from '../utils';
+import { isLaravelProject, isSailInstalled } from '../utils';
 import { HtmlProvider } from './HtmlProvider';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { sailContainers, isDockerRunning } from '../extension';
+import { Sail } from '../commands/Sail';
+import { Composer } from '../commands/Composer';
+import { Artisan } from '../commands/Artisan';
 
 export class DashboardWebViewProvider implements vscode.WebviewViewProvider {
     public static readonly viewId = 'laravel-sail-main';
     private _view?: vscode.WebviewView;
     private readonly _htmlProvider: HtmlProvider;
+    private readonly sail: Sail;
+    private readonly composer: Composer;
+    private readonly artisan: Artisan;
 
     constructor(private readonly _extensionUri: vscode.Uri) {
         this._htmlProvider = new HtmlProvider(this._extensionUri);
+        this.sail = new Sail();
+        this.composer = new Composer();
+        this.artisan = new Artisan();
     }
 
     public resolveWebviewView(
@@ -37,8 +46,7 @@ export class DashboardWebViewProvider implements vscode.WebviewViewProvider {
                         });
 
                         if (installInDev) {
-                            const command = installInDev === 'Yes' ? 'composer require laravel/sail --dev' : 'composer require laravel/sail';
-                            await runTaskWithProgress(command, 'Installing Laravel Sail');
+                            await this.composer.installSail(installInDev === 'Yes');
                             this.refresh();
 
                             const publishDockerCompose = await vscode.window.showQuickPick(['Yes', 'No'], {
@@ -46,7 +54,7 @@ export class DashboardWebViewProvider implements vscode.WebviewViewProvider {
                             });
 
                             if (publishDockerCompose === 'Yes') {
-                                await runTaskWithProgress('artisan sail:install', 'Publishing Docker Compose and Updating .env', true);
+                                await this.artisan.sailInstall();
                                 this.showSailInstalledMessage();
 
                                 const runMigration = await vscode.window.showQuickPick(['Yes', 'No'], {
@@ -54,7 +62,7 @@ export class DashboardWebViewProvider implements vscode.WebviewViewProvider {
                                 });
 
                                 if (runMigration === 'Yes') {
-                                    await runTaskWithProgress('./vendor/bin/sail artisan migrate', 'Running Sail Migrate');
+                                    await this.artisan.migrate();
                                 }
                             }
                         }
@@ -64,11 +72,11 @@ export class DashboardWebViewProvider implements vscode.WebviewViewProvider {
                     this.updateWebviewContent(webviewView);
                     break;
                 case 'sailUp':
-                    await runTask('./vendor/bin/sail up', 'Running Sail Up');
+                    await this.sail.start('');
                     this.updateWebviewContent(webviewView);
                     break;
                 case 'publish':
-                    await runTaskWithProgress('artisan sail:install', 'Publishing Docker Compose and Updating .env', true);
+                    await this.artisan.sailInstall();
                     this.updateWebviewContent(webviewView);
                     break;
             }

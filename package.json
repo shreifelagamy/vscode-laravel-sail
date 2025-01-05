@@ -45,6 +45,26 @@
             {
                 "command": "laravelSail.delete",
                 "title": "Laravel Sail: Delete"
+            },
+            {
+                "command": "laravelSail.killService",
+                "title": "Kill"
+            },
+            {
+                "command": "laravelSail.pauseService",
+                "title": "Pause"
+            },
+            {
+                "command": "laravelSail.startService",
+                "title": "Start"
+            },
+            {
+                "command": "laravelSail.unpauseService",
+                "title": "Unpause"
+            },
+            {
+                "command": "laravelSail.statsService",
+                "title": "Stats"
             }
         ],
         "viewsContainers": {
@@ -65,7 +85,7 @@
                 },
                 {
                     "id": "laravel-sail-containers",
-                    "name": "containers",
+                    "name": "Services",
                     "type": "tree"
                 }
             ]
@@ -75,6 +95,33 @@
                 {
                     "command": "laravelSail.refresh",
                     "group": "navigation"
+                }
+            ],
+            "view/item/context": [
+                {
+                    "command": "laravelSail.killService",
+                    "when": "view == laravel-sail-containers && viewItem == sailContainer_running",
+                    "group": "1_modification"
+                },
+                {
+                    "command": "laravelSail.pauseService",
+                    "when": "view == laravel-sail-containers && viewItem == sailContainer_running",
+                    "group": "1_modification"
+                },
+                {
+                    "command": "laravelSail.startService",
+                    "when": "view == laravel-sail-containers && viewItem == sailContainer_killed",
+                    "group": "1_modification"
+                },
+                {
+                    "command": "laravelSail.unpauseService",
+                    "when": "view == laravel-sail-containers && viewItem == sailContainer_paused",
+                    "group": "1_modification"
+                },
+                {
+                    "command": "laravelSail.statsService",
+                    "when": "view == laravel-sail-containers && viewItem == sailContainer_running",
+                    "group": "1_modification"
                 }
             ]
         },
@@ -86,6 +133,21 @@
                     "type": "string",
                     "default": "php",
                     "description": "Path to the PHP executable"
+                },
+                "laravelSail.sailPath": {
+                    "type": "string",
+                    "default": "./vendor/bin/sail",
+                    "description": "Path to the Sail executable"
+                },
+                "laravelSail.composerPath": {
+                    "type": "string",
+                    "default": "composer",
+                    "description": "Path to the Composer executable"
+                },
+                "laravelSail.artisanPath": {
+                    "type": "string",
+                    "default": "artisan",
+                    "description": "Path to the Artisan executable"
                 }
             }
         }

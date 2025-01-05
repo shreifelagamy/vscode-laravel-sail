@@ -14,7 +14,7 @@ export class ContainersTreeViewProvider implements vscode.TreeDataProvider<SailC
             return Promise.resolve([]);
         }
 
-        return Promise.resolve(sailContainers.map(container => new SailContainer(container.service, container.state, container.ports, container.image)));
+        return Promise.resolve(sailContainers.map(container => new SailContainer(container.service, container.state, container.ports, container.image, container.status)));
     }
 
     getTreeItem(element: SailContainer | SailPort): vscode.TreeItem {
@@ -26,17 +26,21 @@ export class ContainersTreeViewProvider implements vscode.TreeDataProvider<SailC
     }
 }
 
-class SailContainer extends vscode.TreeItem {
+export class SailContainer extends vscode.TreeItem {
     constructor(
         public readonly service: string,
         public readonly state: string,
         public readonly ports: { URL: string, TargetPort: number, PublishedPort: number, Protocol: string }[],
-        public readonly image: string
+        public readonly image: string,
+        public readonly status: string
     ) {
         super(service, vscode.TreeItemCollapsibleState.Collapsed);
-        this.contextValue = 'sailContainer';
-        this.description = `${image}`;
-        this.iconPath = new vscode.ThemeIcon(state === 'running' ? 'circle-filled' : 'circle-outline', new vscode.ThemeColor(state === 'running' ? 'charts.green' : 'charts.red'));
+        this.contextValue = `sailContainer_${status}`;
+        this.description = `${image} (${status})`;
+        this.iconPath = new vscode.ThemeIcon(
+            status === 'running' ? 'play' : status === 'paused' ? 'debug-pause' : 'archive',
+            new vscode.ThemeColor(status === 'running' ? 'charts.green' : status === 'paused' ? 'charts.yellow' : 'charts.red')
+        );
     }
 }
 
