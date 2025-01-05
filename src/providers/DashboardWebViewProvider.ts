@@ -1,15 +1,17 @@
 import * as vscode from 'vscode';
-import { runTaskWithProgress, isLaravelProject, isSailInstalled } from '../utils';
+import { isLaravelProject, isSailInstalled, runCommand, runTask, runTaskWithProgress } from '../utils';
 import { HtmlProvider } from './HtmlProvider';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+import { sailContainers, isDockerRunning } from '../extension';
 
-export class SailSidebarProvider implements vscode.WebviewViewProvider {
+export class DashboardWebViewProvider implements vscode.WebviewViewProvider {
     public static readonly viewId = 'laravel-sail-main';
     private _view?: vscode.WebviewView;
     private readonly _htmlProvider: HtmlProvider;
 
     constructor(private readonly _extensionUri: vscode.Uri) {
         this._htmlProvider = new HtmlProvider(this._extensionUri);
-        // this.checkSailStatus();
     }
 
     public resolveWebviewView(
@@ -62,7 +64,12 @@ export class SailSidebarProvider implements vscode.WebviewViewProvider {
                     this.updateWebviewContent(webviewView);
                     break;
                 case 'sailUp':
-                    await runTaskWithProgress('./vendor/bin/sail up', 'Running Sail Up');
+                    await runTask('./vendor/bin/sail up', 'Running Sail Up');
+                    this.updateWebviewContent(webviewView);
+                    break;
+                case 'publish':
+                    await runTaskWithProgress('artisan sail:install', 'Publishing Docker Compose and Updating .env', true);
+                    this.updateWebviewContent(webviewView);
                     break;
             }
         });
@@ -74,33 +81,33 @@ export class SailSidebarProvider implements vscode.WebviewViewProvider {
         }
     }
 
-    private async checkSailStatus() {
-        setInterval(async () => {
-            const isRunning = await this.isSailRunning();
-            if (this._view) {
-                this.updateWebviewContent(this._view, isRunning);
-            }
-        }, 5000); // Check every 5 seconds
-    }
-
-    private async isSailRunning(): Promise<boolean> {
-        try {
-            const result = await runTaskWithProgress('./vendor/bin/sail ps', 'Checking Sail Status', true);
-            return result.includes('Up');
-        } catch {
-            return false;
+    private getSailStatus(): string {
+        const upCount = sailContainers.filter(container => container.state === 'running').length;
+        if (upCount === sailContainers.length && upCount > 0) {
+            return 'green';
         }
+
+        if (upCount > 0) {
+            return 'yellow';
+        }
+
+        return 'red';
     }
 
-    private updateWebviewContent(webviewView: vscode.WebviewView, isRunning = false) {
+    private async updateWebviewContent(webviewView: vscode.WebviewView) {
+        if (!isDockerRunning) {
+            webviewView.webview.html = this._htmlProvider.getDockerNotRunningHtml(webviewView.webview);
+            return;
+        }
+
         if (!isLaravelProject()) {
             webviewView.webview.html = this._htmlProvider.getNotLaravelHtml(webviewView.webview);
         } else if (!isSailInstalled()) {
             webviewView.webview.html = this._htmlProvider.getHtmlForWebview(webviewView.webview);
-        } else if (isRunning) {
-            webviewView.webview.html = this._htmlProvider.getSailRunningHtml(webviewView.webview);
         } else {
-            webviewView.webview.html = this._htmlProvider.getSailInstalledHtml(webviewView.webview);
+            const status = this.getSailStatus();
+            const dockerComposeExists = fs.existsSync(path.join(vscode.workspace.rootPath || '', 'docker-compose.yml'));
+            webviewView.webview.html = this._htmlProvider.getSailStatusHtml(webviewView.webview, status, dockerComposeExists);
         }
     }
 
@@ -110,4 +117,3 @@ export class SailSidebarProvider implements vscode.WebviewViewProvider {
         }
     }
 }
-

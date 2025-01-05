@@ -60,7 +60,7 @@
             "laravel-sail": [
                 {
                     "id": "laravel-sail-main",
-                    "name": "Laravel Sail",
+                    "name": "Dashboard",
                     "type": "webview"
                 },
                 {
@@ -74,7 +74,6 @@
             "view/title": [
                 {
                     "command": "laravelSail.refresh",
-                    "when": "view == laravel-sail-main",
                     "group": "navigation"
                 }
             ]
