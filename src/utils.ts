@@ -16,7 +16,11 @@ export async function runTaskWithProgress(command: string, taskName: string, use
                 await runTask(command, taskName);
             }
         } catch (error) {
-            vscode.window.showErrorMessage(error.message);
+            if (error instanceof Error) {
+                vscode.window.showErrorMessage(error.message);
+            } else {
+                vscode.window.showErrorMessage('An unknown error occurred.');
+            }
         }
     });
 }

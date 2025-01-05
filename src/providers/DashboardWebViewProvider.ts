@@ -15,6 +15,7 @@ export class DashboardWebViewProvider implements vscode.WebviewViewProvider {
     private readonly sail: Sail;
     private readonly composer: Composer;
     private readonly artisan: Artisan;
+    private dockerComposePath: string | null = null;
 
     constructor(private readonly _extensionUri: vscode.Uri) {
         this._htmlProvider = new HtmlProvider(this._extensionUri);
@@ -56,14 +57,6 @@ export class DashboardWebViewProvider implements vscode.WebviewViewProvider {
                             if (publishDockerCompose === 'Yes') {
                                 await this.artisan.sailInstall();
                                 this.showSailInstalledMessage();
-
-                                const runMigration = await vscode.window.showQuickPick(['Yes', 'No'], {
-                                    placeHolder: 'Do you want to run the database migrations?'
-                                });
-
-                                if (runMigration === 'Yes') {
-                                    await this.artisan.migrate();
-                                }
                             }
                         }
                     }
@@ -72,12 +65,62 @@ export class DashboardWebViewProvider implements vscode.WebviewViewProvider {
                     this.updateWebviewContent(webviewView);
                     break;
                 case 'sailUp':
-                    await this.sail.start('');
+                    await this.sail.up();
                     this.updateWebviewContent(webviewView);
                     break;
                 case 'publish':
                     await this.artisan.sailInstall();
                     this.updateWebviewContent(webviewView);
+                    break;
+                case 'sailDown':
+                    await this.sail.down();
+                    this.updateWebviewContent(webviewView);
+                    break;
+                case 'sailUpDetached':
+                    await this.sail.up(true);
+                    this.updateWebviewContent(webviewView);
+                    break;
+                case 'sailInstall':
+                    await this.artisan.sailInstall();
+                    this.updateWebviewContent(webviewView);
+                    break;
+                case 'migrate':
+                    await this.artisan.migrate();
+                    this.updateWebviewContent(webviewView);
+                    break;
+                case 'openDockerCompose':
+                    if (this.dockerComposePath) {
+                        const document = await vscode.workspace.openTextDocument(this.dockerComposePath);
+                        await vscode.window.showTextDocument(document);
+                    }
+                    break;
+                case 'sailOpen':
+                    await this.sail.open();
+                    break;
+                case 'sailRestart':
+                    await this.sail.restart();
+                    this.updateWebviewContent(webviewView);
+                    break;
+                case 'sailShell':
+                    {
+                        const shouldUseRoot = await vscode.window.showQuickPick(['Yes', 'No'], {
+                            placeHolder: 'Do you want to use root access?'
+                        });
+
+                        await this.sail.shell(shouldUseRoot === 'Yes');
+                    }
+                    break;
+                case 'sailBash':
+                    {
+                        const shouldUseRoot = await vscode.window.showQuickPick(['Yes', 'No'], {
+                            placeHolder: 'Do you want to use root access?'
+                        });
+
+                        await this.sail.bash(shouldUseRoot === 'Yes');
+                    }
+                    break;
+                case 'sailTinker':
+                    await this.sail.tinker();
                     break;
             }
         });
@@ -92,14 +135,14 @@ export class DashboardWebViewProvider implements vscode.WebviewViewProvider {
     private getSailStatus(): string {
         const upCount = sailContainers.filter(container => container.state === 'running').length;
         if (upCount === sailContainers.length && upCount > 0) {
-            return 'green';
+            return 'working';
         }
 
         if (upCount > 0) {
-            return 'yellow';
+            return 'warning';
         }
 
-        return 'red';
+        return 'stopped';
     }
 
     private async updateWebviewContent(webviewView: vscode.WebviewView) {
@@ -114,8 +157,8 @@ export class DashboardWebViewProvider implements vscode.WebviewViewProvider {
             webviewView.webview.html = this._htmlProvider.getHtmlForWebview(webviewView.webview);
         } else {
             const status = this.getSailStatus();
-            const dockerComposeExists = fs.existsSync(path.join(vscode.workspace.rootPath || '', 'docker-compose.yml'));
-            webviewView.webview.html = this._htmlProvider.getSailStatusHtml(webviewView.webview, status, dockerComposeExists);
+            this.dockerComposePath = fs.existsSync(path.join(vscode.workspace.rootPath || '', 'docker-compose.yml')) ? path.join(vscode.workspace.rootPath || '', 'docker-compose.yml') : null;
+            webviewView.webview.html = this._htmlProvider.getSailStatusHtml(webviewView.webview, status, this.dockerComposePath);
         }
     }
 

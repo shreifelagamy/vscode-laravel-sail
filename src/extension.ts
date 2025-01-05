@@ -18,7 +18,7 @@ async function checkSailStatus() {
         } catch (error) {
             console.error(`sail: ${error}`);
             sailContainers = [];
-            isDockerRunning = !error.message.includes('Docker is not running');
+            isDockerRunning = error instanceof Error && !error.message.includes('Docker is not running');
         }
         EventBus.fireDidChangeStatus();
     }, 5000); // Check every 5 seconds

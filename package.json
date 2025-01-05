@@ -27,20 +27,8 @@
                 "icon": "$(refresh)"
             },
             {
-                "command": "larave-sail.startSail",
-                "title": "Laravel Sail: Start"
-            },
-            {
-                "command": "larave-sail.stopSail",
-                "title": "Laravel Sail: Stop"
-            },
-            {
                 "command": "larave-sail.routeList",
                 "title": "Laravel Sail: Route list"
-            },
-            {
-                "command": "larave-sail.share",
-                "title": "Laravel Sail: Share"
             },
             {
                 "command": "laravelSail.delete",
@@ -65,6 +53,30 @@
             {
                 "command": "laravelSail.statsService",
                 "title": "Stats"
+            },
+            {
+                "command": "laravelSail.down",
+                "title": "Down"
+            },
+            {
+                "command": "laravelSail.open",
+                "title": "Open"
+            },
+            {
+                "command": "laravelSail.restart",
+                "title": "Restart"
+            },
+            {
+                "command": "laravelSail.shell",
+                "title": "Shell"
+            },
+            {
+                "command": "laravelSail.bash",
+                "title": "Bash"
+            },
+            {
+                "command": "laravelSail.tinker",
+                "title": "Tinker"
             }
         ],
         "viewsContainers": {

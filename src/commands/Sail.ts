@@ -10,8 +10,14 @@ export class Sail {
         this.sailCommand = config.get<string>('sailPath', './vendor/bin/sail');
     }
 
-    async start(service: string) {
-        await runTask(`${this.sailCommand} up ${service}`, `Starting ${service}`);
+    async up(detached = false) {
+        await runTask(`${this.sailCommand} up ${detached ? '-d' : ''}`, 'Sail up');
+        EventBus.fireDidChangeStatus();
+    }
+
+    async start(service?: string) {
+        const command = service ? `${this.sailCommand} up ${service}` : `${this.sailCommand} up`;
+        await runTask(command, `Starting ${service || 'all services'}`);
         EventBus.fireDidChangeStatus();
     }
 
@@ -49,5 +55,30 @@ export class Sail {
 
     async stats(service: string) {
         await runTask(`${this.sailCommand} stats ${service}`, `Showing stats for ${service}`);
+    }
+
+    async down() {
+        await runTask(`${this.sailCommand} down`, 'Stopping all services');
+        EventBus.fireDidChangeStatus();
+    }
+
+    async open() {
+        await runCommand(`${this.sailCommand} open`);
+    }
+
+    async restart() {
+        await runTask(`${this.sailCommand} restart`, 'Sail restarting');
+    }
+
+    async shell(isRoot = false) {
+        await runTask(`${this.sailCommand} ${isRoot ? 'root-shell' : 'shell'}`, 'Opening Sail shell');
+    }
+
+    async bash(isRoot = false) {
+        await runTask(`${this.sailCommand} ${isRoot ? 'root-bash' : 'bash'}`, 'Opening Sail bash');
+    }
+
+    async tinker() {
+        await runTask(`${this.sailCommand} tinker`, 'Opening Sail tinker');
     }
 }

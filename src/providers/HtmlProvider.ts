@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { getNonce } from '../utils';
 
 export class HtmlProvider {
-    constructor(private readonly _extensionUri: vscode.Uri) {}
+    constructor(private readonly _extensionUri: vscode.Uri) { }
 
     private getStyleUri(webview: vscode.Webview): vscode.Uri {
         return webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'style.css'));
@@ -64,38 +64,6 @@ export class HtmlProvider {
             </html>`;
     }
 
-    public getSailRunningHtml(webview: vscode.Webview): string {
-        const nonce = getNonce();
-        const codiconsUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'node_modules', '@vscode/codicons', 'dist', 'codicon.css'));
-        const styleUri = this.getStyleUri(webview);
-
-        return `<!DOCTYPE html>
-            <html lang="en">
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <link href="${codiconsUri}" rel="stylesheet">
-                <link href="${styleUri}" rel="stylesheet">
-
-                <title>Laravel Sail</title>
-            </head>
-            <body>
-                <p>INFO: Sail containers are running:</p>
-                <div class="container">
-                    <span>Container 1</span>
-                    <span class="running">Running</span>
-                </div>
-                <div class="container">
-                    <span>Container 2</span>
-                    <span class="running">Running</span>
-                </div>
-                <script nonce="${nonce}">
-                    const vscode = acquireVsCodeApi();
-                </script>
-            </body>
-            </html>`;
-    }
-
     public getNotLaravelHtml(webview: vscode.Webview): string {
         const nonce = getNonce();
         const styleUri = this.getStyleUri(webview);
@@ -132,43 +100,80 @@ export class HtmlProvider {
             </html>`;
     }
 
-    public getSailStatusHtml(webview: vscode.Webview, status: string, dockerComposeExists: boolean): string {
+    public getSailStatusHtml(webview: vscode.Webview, status: string, dockerComposePath: string | null): string {
         const nonce = getNonce();
-        const codiconsUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'node_modules', '@vscode/codicons', 'dist', 'codicon.css'));
         const styleUri = this.getStyleUri(webview);
-        const statusColor = status === 'green' ? 'green' : status === 'yellow' ? 'yellow' : 'red';
-        const statusLabel = status === 'green' ? 'Running' : status === 'yellow' ? 'Partially Running' : 'Stopped';
-        const statusIcon = status === 'green' ? 'check' : status === 'yellow' ? 'warning' : 'error';
-        const sailUpButton = status === 'red' ? '<button class="button" onclick="sailUp()"><i class="codicon codicon-play"></i>Sail Up</button>' : '';
-        const publishStatus = dockerComposeExists ? 'Published' : 'Not Published';
-        const publishIcon = dockerComposeExists ? 'check' : 'cloud-upload';
-        const publishColor = dockerComposeExists ? 'green' : 'red';
-        const publishButton = dockerComposeExists ? '' : '<button class="button" onclick="publish()"><i class="codicon codicon-cloud-upload"></i>Publish</button>';
+        const codiconsUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'node_modules', '@vscode/codicons', 'dist', 'codicon.css'));
+        const statusColor = status === 'working' ? 'green' : status === 'warning' ? 'yellow' : 'red';
+        const statusIcon = status === 'working' ? 'check' : status === 'warning' ? 'alert' : 'error';
 
-        return `<!DOCTYPE html>
+        const composeFileStatus = dockerComposePath ? 'Exists' : 'Not Found';
+        const composeFileColor = dockerComposePath ? 'green' : 'red';
+        const composeFileIcon = dockerComposePath ? 'check' : 'error';
+
+        return `
+            <!DOCTYPE html>
             <html lang="en">
             <head>
                 <meta charset="UTF-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <link href="${codiconsUri}" rel="stylesheet">
                 <link href="${styleUri}" rel="stylesheet">
-                <title>Laravel Sail</title>
+                <title>Sail Status</title>
             </head>
             <body>
-                <p>Sail Status: <i class="codicon codicon-${statusIcon}" style="color: ${statusColor};"></i> <span style="color: ${statusColor};">${statusLabel}</span></p>
-                ${sailUpButton}
-                <p>Docker Compose: <i class="codicon codicon-${publishIcon}" style="color: ${publishColor};"></i> <span style="color: ${publishColor};">${publishStatus}</span></p>
-                ${publishButton}
+                <p class="status" style="color: ${statusColor};">
+                    <i class="codicon codicon-${statusIcon}"></i> Sail Status: <b>${status.toUpperCase()}</b>
+                </p>
+                <p class="status" style="color: ${composeFileColor};">
+                    <i class="codicon codicon-${composeFileIcon}"></i> Docker Compose File: <b>${composeFileStatus.toUpperCase()}</b>
+                </p>
+                ${this.getSidebarHtml(status, dockerComposePath)}
                 <script nonce="${nonce}">
                     const vscode = acquireVsCodeApi();
-                    function sailUp() {
-                        vscode.postMessage({ command: 'sailUp' });
-                    }
-                    function publish() {
-                        vscode.postMessage({ command: 'publish' });
+                    function handleAction(command) {
+                        vscode.postMessage({ command: command });
                     }
                 </script>
             </body>
-            </html>`;
+            </html>
+        `;
+    }
+
+    private getSidebarHtml(status: string, dockerComposePath: string | null): string {
+        let html = '<div class="sidebar">';
+
+        if (dockerComposePath) {
+            if (status === 'stopped') {
+                html += `
+                    <button class="button" onclick="handleAction('sailUp')"><i class="codicon codicon-play"></i>Up</button>
+                    <button class="button" onclick="handleAction('sailUpDetached')"><i class="codicon codicon-debug-disconnect"></i>Up (Detached)</button>
+                `;
+            } else { // sail is running
+                html += `
+                    <button class="button" onclick="handleAction('sailOpen')"><i class="codicon codicon-globe"></i>Open in Browser</button>
+                    <button class="button" onclick="handleAction('sailDown')"><i class="codicon codicon-debug-stop"></i>Down</button>
+                    <button class="button" onclick="handleAction('sailRestart')"><i class="codicon codicon-refresh"></i>Restart</button>
+                    <button class="button" onclick="handleAction('migrate')"><i class="codicon codicon-database"></i>Migrate</button>
+                    <button class="button" onclick="handleAction('sailShell')"><i class="codicon codicon-terminal"></i>Shell</button>
+                    <button class="button" onclick="handleAction('sailBash')"><i class="codicon codicon-terminal-bash"></i>Bash</button>
+                    <button class="button" onclick="handleAction('sailTinker')"><i class="codicon codicon-tools"></i>Tinker</button>
+                `;
+            }
+
+            html += `
+                <button class="button" onclick="handleAction('openDockerCompose')"><i class="codicon codicon-file"></i>Open Docker Compose</button>
+            `;
+        } else {
+            html += `
+                <button class="button" onclick="handleAction('sailInstall')"><i class="codicon codicon-cloud-upload"></i>Publish Docker Compose</button>
+            `;
+        }
+
+        html += '</div>';
+
+        return html;
     }
 }
+
+
