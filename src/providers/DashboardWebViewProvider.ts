@@ -3,7 +3,7 @@ import { isLaravelProject, isSailInstalled } from '../utils';
 import { HtmlProvider } from './HtmlProvider';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import { sailContainers, isDockerRunning } from '../extension';
+import { sailContainers, isDockerRunning, isLoading } from '../extension';
 import { Sail } from '../commands/Sail';
 import { Composer } from '../commands/Composer';
 import { Artisan } from '../commands/Artisan';
@@ -146,6 +146,11 @@ export class DashboardWebViewProvider implements vscode.WebviewViewProvider {
     }
 
     private async updateWebviewContent(webviewView: vscode.WebviewView) {
+        if (isLoading) {
+            webviewView.webview.html = this._htmlProvider.getLoadingHtml(webviewView.webview);
+            return;
+        }
+
         if (!isDockerRunning) {
             webviewView.webview.html = this._htmlProvider.getDockerNotRunningHtml(webviewView.webview);
             return;
@@ -168,3 +173,4 @@ export class DashboardWebViewProvider implements vscode.WebviewViewProvider {
         }
     }
 }
+

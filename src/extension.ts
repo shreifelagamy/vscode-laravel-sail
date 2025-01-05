@@ -2,26 +2,41 @@ import * as vscode from 'vscode';
 import { registerCommands } from './registerCommands';
 import { EventBus } from './eventBus';
 import { Sail } from './commands/Sail';
-import { ContainersTreeViewProvider } from './providers/ContainersTreeViewProvider';
-import { DashboardWebViewProvider } from './providers/DashboardWebViewProvider';
+import { ContainersTreeViewProvider, DashboardWebViewProvider } from './providers';
 
 export let sailContainers: { service: string, state: string, ports: { URL: string, TargetPort: number, PublishedPort: number, Protocol: string }[], image: string, status: string }[] = [];
 export let isDockerRunning = true;
+export let isLoading = true;
 
 const sail = new Sail();
 
 async function checkSailStatus() {
-    setInterval(async () => {
-        try {
-            sailContainers = await sail.ps();
-            isDockerRunning = true;
-        } catch (error) {
-            console.error(`sail: ${error}`);
-            sailContainers = [];
-            isDockerRunning = error instanceof Error && !error.message.includes('Docker is not running');
-        }
+    try {
+        sailContainers = await sail.ps();
+        isDockerRunning = true;
+    } catch (error) {
+        console.error(`sail: ${error}`);
+        sailContainers = [];
+        isDockerRunning = error instanceof Error && !error.message.includes('Docker is not running');
+    } finally {
+        isLoading = false;
         EventBus.fireDidChangeStatus();
-    }, 5000); // Check every 5 seconds
+    }
+}
+
+
+async function startSailStatusCheck() {
+    // Initial check
+    await checkSailStatus();
+
+    // Get interval from configuration
+    const config = vscode.workspace.getConfiguration('laravelSail');
+    const interval = config.get<number>('checkInterval', 5000);
+
+    // Start periodic checks
+    setInterval(async () => {
+        await checkSailStatus();
+    }, interval);
 }
 
 export function activate(context: vscode.ExtensionContext) {
@@ -41,7 +56,7 @@ export function activate(context: vscode.ExtensionContext) {
         treeViewProvider.refresh();
     });
 
-    checkSailStatus();
+    startSailStatusCheck();
 }
 
 // this method is called when your extension is deactivated

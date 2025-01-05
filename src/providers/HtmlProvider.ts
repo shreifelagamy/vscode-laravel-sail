@@ -140,6 +140,27 @@ export class HtmlProvider {
         `;
     }
 
+    public getLoadingHtml(webview: vscode.Webview): string {
+        const styleUri = this.getStyleUri(webview);
+        const codiconsUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'node_modules', '@vscode/codicons', 'dist', 'codicon.css'));
+
+        return `
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <link href="${codiconsUri}" rel="stylesheet">
+                <link href="${styleUri}" rel="stylesheet">
+                <title>Laravel Sail</title>
+            </head>
+            <body>
+                <p><i class="codicon codicon-sync codicon-modifier-spin"></i> Checking Sail status...</p>
+            </body>
+            </html>
+        `;
+    }
+
     private getSidebarHtml(status: string, dockerComposePath: string | null): string {
         let html = '<div class="sidebar">';
 
@@ -175,5 +196,3 @@ export class HtmlProvider {
         return html;
     }
 }
-
-

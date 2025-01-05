@@ -160,6 +160,11 @@
                     "type": "string",
                     "default": "artisan",
                     "description": "Path to the Artisan executable"
+                },
+                "laravelSail.checkInterval": {
+                    "type": "number",
+                    "default": 5000,
+                    "description": "Interval in milliseconds to check sail status"
                 }
             }
         }
