@@ -1,0 +1,202 @@
+{
+    "name": "laravel-sail",
+    "displayName": "laravel Sail",
+    "description": "support laravel sail",
+    "version": "0.0.1",
+    "engines": {
+        "vscode": "^1.96.0"
+    },
+    "categories": [
+        "Other"
+    ],
+    "activationEvents": [
+        "workspaceContains:**/composer.json"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/shreifelagamy/vscode-laravel-sail"
+    },
+    "main": "./dist/extension.js",
+    "contributes": {
+        "commands": [
+            {
+                "command": "laravelSail.refresh",
+                "title": "Refresh",
+                "icon": "$(refresh)"
+            },
+            {
+                "command": "larave-sail.routeList",
+                "title": "Laravel Sail: Route list"
+            },
+            {
+                "command": "laravelSail.delete",
+                "title": "Laravel Sail: Delete"
+            },
+            {
+                "command": "laravelSail.killService",
+                "title": "Kill"
+            },
+            {
+                "command": "laravelSail.pauseService",
+                "title": "Pause"
+            },
+            {
+                "command": "laravelSail.startService",
+                "title": "Start"
+            },
+            {
+                "command": "laravelSail.unpauseService",
+                "title": "Unpause"
+            },
+            {
+                "command": "laravelSail.statsService",
+                "title": "Stats"
+            },
+            {
+                "command": "laravelSail.down",
+                "title": "Down"
+            },
+            {
+                "command": "laravelSail.open",
+                "title": "Open"
+            },
+            {
+                "command": "laravelSail.restart",
+                "title": "Restart"
+            },
+            {
+                "command": "laravelSail.shell",
+                "title": "Shell"
+            },
+            {
+                "command": "laravelSail.bash",
+                "title": "Bash"
+            },
+            {
+                "command": "laravelSail.tinker",
+                "title": "Tinker"
+            }
+        ],
+        "viewsContainers": {
+            "activitybar": [
+                {
+                    "id": "laravel-sail",
+                    "title": "Laravel Sail",
+                    "icon": "images/logo-activitybar.png"
+                }
+            ]
+        },
+        "views": {
+            "laravel-sail": [
+                {
+                    "id": "laravel-sail-main",
+                    "name": "Dashboard",
+                    "type": "webview"
+                },
+                {
+                    "id": "laravel-sail-containers",
+                    "name": "Services",
+                    "type": "tree"
+                }
+            ]
+        },
+        "menus": {
+            "view/title": [
+                {
+                    "command": "laravelSail.refresh",
+                    "group": "navigation"
+                }
+            ],
+            "view/item/context": [
+                {
+                    "command": "laravelSail.killService",
+                    "when": "view == laravel-sail-containers && viewItem == sailContainer_running",
+                    "group": "1_modification"
+                },
+                {
+                    "command": "laravelSail.pauseService",
+                    "when": "view == laravel-sail-containers && viewItem == sailContainer_running",
+                    "group": "1_modification"
+                },
+                {
+                    "command": "laravelSail.startService",
+                    "when": "view == laravel-sail-containers && viewItem == sailContainer_killed",
+                    "group": "1_modification"
+                },
+                {
+                    "command": "laravelSail.unpauseService",
+                    "when": "view == laravel-sail-containers && viewItem == sailContainer_paused",
+                    "group": "1_modification"
+                },
+                {
+                    "command": "laravelSail.statsService",
+                    "when": "view == laravel-sail-containers && viewItem == sailContainer_running",
+                    "group": "1_modification"
+                }
+            ]
+        },
+        "configuration": {
+            "type": "object",
+            "title": "Laravel Sail Configuration",
+            "properties": {
+                "laravelSail.phpPath": {
+                    "type": "string",
+                    "default": "php",
+                    "description": "Path to the PHP executable"
+                },
+                "laravelSail.sailPath": {
+                    "type": "string",
+                    "default": "./vendor/bin/sail",
+                    "description": "Path to the Sail executable"
+                },
+                "laravelSail.composerPath": {
+                    "type": "string",
+                    "default": "composer",
+                    "description": "Path to the Composer executable"
+                },
+                "laravelSail.artisanPath": {
+                    "type": "string",
+                    "default": "artisan",
+                    "description": "Path to the Artisan executable"
+                },
+                "laravelSail.checkInterval": {
+                    "type": "number",
+                    "default": 5000,
+                    "description": "Interval in milliseconds to check sail status"
+                }
+            }
+        }
+    },
+    "scripts": {
+        "vscode:prepublish": "yarn run package",
+        "compile": "yarn run check-types && yarn run lint && node esbuild.js",
+        "watch": "npm-run-all -p watch:*",
+        "watch:esbuild": "node esbuild.js --watch",
+        "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
+        "package": "yarn run check-types && yarn run lint && node esbuild.js --production",
+        "compile-tests": "tsc -p . --outDir out",
+        "watch-tests": "tsc -p . -w --outDir out",
+        "pretest": "yarn run compile-tests && yarn run compile && yarn run lint",
+        "check-types": "tsc --noEmit",
+        "lint": "eslint src",
+        "test": "vscode-test"
+    },
+    "devDependencies": {
+        "@types/mocha": "^10.0.10",
+        "@types/node": "20.x",
+        "@types/sinon": "^17.0.3",
+        "@types/vscode": "^1.96.0",
+        "@typescript-eslint/eslint-plugin": "^8.17.0",
+        "@typescript-eslint/parser": "^8.17.0",
+        "@vscode/test-cli": "^0.0.10",
+        "@vscode/test-electron": "^2.4.1",
+        "esbuild": "^0.24.0",
+        "eslint": "^9.16.0",
+        "npm-run-all": "^4.1.5",
+        "sinon": "^19.0.2",
+        "typescript": "^5.7.2"
+    },
+    "dependencies": {
+        "@vscode/codicons": "^0.0.36"
+    }
+}
