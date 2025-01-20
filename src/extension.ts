@@ -1,8 +1,8 @@
 import * as vscode from 'vscode';
-import { registerCommands } from './registerCommands';
-import { EventBus } from './eventBus';
 import { Sail } from './commands/Sail';
+import { EventBus } from './eventBus';
 import { ContainersTreeViewProvider, DashboardWebViewProvider } from './providers';
+import { registerCommands } from './registerCommands';
 
 export let sailContainers: { service: string, state: string, ports: { URL: string, TargetPort: number, PublishedPort: number, Protocol: string }[], image: string, status: string }[] = [];
 export let isDockerRunning = true;
@@ -42,6 +42,21 @@ async function startSailStatusCheck() {
 
 export function activate(context: vscode.ExtensionContext) {
     registerCommands(context);
+
+    // Show star request message once
+    const hasShownStarMessage = context.globalState.get('hasShownStarMessage');
+    if (!hasShownStarMessage) {
+        const action = '⭐ Star on GitHub';
+        vscode.window.showInformationMessage(
+            '❤️ Enjoying Laravel Sail extension? Show your support by giving us a star! 🌟',
+            action
+        ).then(selection => {
+            if (selection === action) {
+                vscode.env.openExternal(vscode.Uri.parse('https://github.com/shreifelagamy/vscode-laravel-sail'));
+            }
+        });
+        context.globalState.update('hasShownStarMessage', true);
+    }
 
     const provider = new DashboardWebViewProvider(context.extensionUri);
     context.subscriptions.push(
