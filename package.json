@@ -1,17 +1,36 @@
 {
     "name": "laravel-sail",
     "displayName": "laravel Sail",
-    "description": "support laravel sail",
-    "version": "0.0.1",
+    "description": "Manage Laravel Sail containers directly from VS Code. Features include real-time container monitoring, service management (start/stop/restart), integrated shell access, Tinker console, and a visual dashboard for Docker containers. Perfect for Laravel developers using Sail for their development environment.",
+    "version": "1.0.0",
+    "license": "MIT",
     "engines": {
         "vscode": "^1.96.0"
     },
     "categories": [
+        "Visualization",
         "Other"
+    ],
+    "keywords": [
+        "laravel",
+        "sail",
+        "docker",
+        "containers",
+        "php",
+        "development",
+        "devops",
+        "docker-compose",
+        "artisan",
+        "tinker"
     ],
     "activationEvents": [
         "workspaceContains:**/composer.json"
     ],
+    "publisher": "shashraf",
+    "author": {
+        "name": "Shreif El-Agamy",
+        "url": "https://theshreif.dev"
+    },
     "repository": {
         "type": "git",
         "url": "https://github.com/shreifelagamy/vscode-laravel-sail"

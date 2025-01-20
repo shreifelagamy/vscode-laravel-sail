@@ -9,6 +9,7 @@ export let isDockerRunning = true;
 export let isLoading = true;
 
 const sail = new Sail();
+let statusCheckInterval: NodeJS.Timeout;
 
 async function checkSailStatus() {
     try {
@@ -34,7 +35,7 @@ async function startSailStatusCheck() {
     const interval = config.get<number>('checkInterval', 5000);
 
     // Start periodic checks
-    setInterval(async () => {
+    statusCheckInterval = setInterval(async () => {
         await checkSailStatus();
     }, interval);
 }
@@ -61,4 +62,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 // this method is called when your extension is deactivated
 export function deactivate() {
+    if (statusCheckInterval) {
+        clearInterval(statusCheckInterval);
+    }
 }

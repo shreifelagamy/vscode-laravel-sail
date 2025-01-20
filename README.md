@@ -1,71 +1,122 @@
-# laravel-sail-revamped README
+# Laravel Sail for VSCode
 
-This is the README for your extension "laravel-sail-revamped". After writing up a brief description, we recommend including the following sections.
+![Laravel Sail](images/icon.png)
+
+A Visual Studio Code extension that provides a seamless integration with Laravel Sail, allowing you to manage your Docker containers directly from VSCode.
+
+## Screenshots
+
+![Dashboard View](images/screen-shot1.png)
+![Services View](images/screen-shot2.png)
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+### 📊 Dashboard View
+- Real-time container status monitoring
+- Quick access to container controls
+- Visual representation of running services
 
-For example if there is an image subfolder under your extension project workspace:
+### 🛠 Service Management
+- View all Laravel Sail services in a tree view
+- Real-time status updates for each container
+- Container operations:
+  - Start/Stop containers
+  - Pause/Unpause services
+  - View container statistics
+  - Kill containers when needed
+  - Restart services
 
-\!\[feature X\]\(images/feature-x.png\)
+### 🔧 Development Tools
+- Quick access to Laravel Sail shell
+- Integrated Laravel Tinker console
+- View and manage Laravel routes
+- Direct access to container bash
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+### 🚀 Quick Commands
+All commands are accessible through the command palette (`Ctrl+Shift+P` / `Cmd+Shift+P`):
+- `Laravel Sail: Shell` - Open shell in container
+- `Laravel Sail: Bash` - Open bash in container
+- `Laravel Sail: Tinker` - Open Laravel Tinker
+- `Laravel Sail: Down` - Stop all containers
+- `Laravel Sail: Restart` - Restart containers
+- `Laravel Sail: Open` - Open application in browser
 
 ## Requirements
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+- Visual Studio Code v1.96.0 or higher
+- Docker installed and running
+- Laravel project with Sail installed
+- WSL2 (for Windows users)
+
+## Installation
+
+1. Open VSCode
+2. Launch Quick Open (Ctrl+P / Cmd+P)
+3. Run the following command:
+   ```
+   ext install laravel-sail
+   ```
 
 ## Extension Settings
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
 This extension contributes the following settings:
 
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
+- `laravelSail.phpPath`: Path to PHP executable (default: "php")
+- `laravelSail.sailPath`: Path to Sail executable (default: "./vendor/bin/sail")
+- `laravelSail.composerPath`: Path to Composer executable (default: "composer")
+- `laravelSail.artisanPath`: Path to Artisan executable (default: "artisan")
+- `laravelSail.checkInterval`: Interval to check sail status in milliseconds (default: 5000)
 
-## Known Issues
+## Usage
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+1. Open your Laravel project in VSCode
+2. Click on the Laravel Sail icon in the activity bar
+3. Use the dashboard to manage your containers
+4. Access commands through:
+   - Command palette
+   - Context menus in the Services view
+   - Dashboard buttons
 
-## Release Notes
+## Features in Detail
 
-Users appreciate release notes as you update your extension.
+### Container Dashboard
+- Visual overview of all running containers
+- Quick access buttons for common operations
+- Real-time status updates
 
-### 1.0.0
+### Services View
+- Tree view of all services defined in your Sail configuration
+- Context menu for service-specific operations
+- Status indicators for each service
 
-Initial release of ...
+### Container Operations
+Each container can be managed with operations:
+- **Start**: Launch a stopped container
+- **Stop**: Stop a running container
+- **Pause/Unpause**: Temporarily suspend container operations
+- **Kill**: Force stop a container
+- **Stats**: View container resource usage
+- **Shell Access**: Direct terminal access to containers
 
-### 1.0.1
+## Troubleshooting
 
-Fixed issue #.
+### Windows Users
+- Ensure WSL2 is properly installed and configured
+- Docker Desktop must be running with WSL2 backend
 
-### 1.1.0
+### Common Issues
+- If containers aren't showing up, check if Docker is running
+- For permission issues, ensure proper Docker configuration
+- WSL2 is required for Windows users
 
-Added features X, Y, and Z.
+## Contributing
 
----
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-## Following extension guidelines
+## License
 
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
+This extension is licensed under the [MIT License](LICENSE).
 
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
+## Credits
 
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+Laravel Sail is a light-weight command-line interface for interacting with Laravel's default Docker development environment. This extension aims to make it even easier to use Sail within VSCode.
