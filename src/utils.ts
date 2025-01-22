@@ -1,8 +1,8 @@
+import { exec } from 'node:child_process';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as process from 'node:process';
 import * as vscode from 'vscode';
-import { exec } from 'node:child_process';
 
 async function checkWSL2(): Promise<boolean> {
     if (process.platform !== 'win32') {
@@ -31,12 +31,16 @@ async function checkWSL2(): Promise<boolean> {
     });
 }
 
+function wrapCommandForWSL(command: string): string {
+    return process.platform === 'win32' ? `wsl ${command}` : command;
+}
+
 export async function runTaskWithProgress(command: string, taskName: string, usePHP = false): Promise<void> {
     // Check WSL2 availability first
     if (process.platform === 'win32') {
         const hasWSL2 = await checkWSL2();
         if (!hasWSL2) {
-            throw new Error('WSL2 is required to run Laravel Sail on Windows. Please install and enable WSL2 first.');
+            throw new Error('WSL2 is required to run Laravel Sail on Windows. Please ensure:\n1. WSL2 is installed (run "wsl --install")\n2. Docker Desktop is configured to use WSL2 backend\n3. Your terminal has access to WSL commands');
         }
     }
 
@@ -66,19 +70,24 @@ export async function runTask(command: string, taskName: string): Promise<void> 
     if (process.platform === 'win32') {
         const hasWSL2 = await checkWSL2();
         if (!hasWSL2) {
-            throw new Error('WSL2 is required to run Laravel Sail on Windows. Please install and enable WSL2 first.');
+            throw new Error('WSL2 is required to run Laravel Sail on Windows. Please ensure:\n1. WSL2 is installed (run "wsl --install")\n2. Docker Desktop is configured to use WSL2 backend\n3. Your terminal has access to WSL commands');
         }
     }
 
     console.log(`SAIL: Running task: ${command}`);
 
     return new Promise((resolve, reject) => {
+        const wrappedCommand = wrapCommandForWSL(command);
+        const shellExecution = process.platform === 'win32'
+            ? new vscode.ShellExecution(wrappedCommand, { executable: 'wsl.exe' })
+            : new vscode.ShellExecution(wrappedCommand);
+
         const task = new vscode.Task(
             { type: 'shell' },
             vscode.TaskScope.Workspace,
             taskName,
             'shell',
-            new vscode.ShellExecution(command)
+            shellExecution
         );
 
         const disposable = vscode.tasks.onDidEndTaskProcess((e) => {
@@ -99,7 +108,9 @@ export async function runTask(command: string, taskName: string): Promise<void> 
 
 export async function runPHPTask(command: string, taskName: string): Promise<void> {
     const phpPath = vscode.workspace.getConfiguration('laravelSail').get<string>('phpPath') || 'php';
-    const fullCommand = `${phpPath} ${command}`;
+    // Use forward slashes for PHP path on WSL
+    const normalizedPhpPath = process.platform === 'win32' ? phpPath.replace(/\\/g, '/') : phpPath;
+    const fullCommand = `${normalizedPhpPath} ${command}`;
     await runTask(fullCommand, taskName);
 }
 
@@ -151,7 +162,7 @@ export async function runCommand(command: string): Promise<string> {
     if (process.platform === 'win32') {
         const hasWSL2 = await checkWSL2();
         if (!hasWSL2) {
-            throw new Error('WSL2 is required to run Laravel Sail on Windows. Please install and enable WSL2 first.');
+            throw new Error('WSL2 is required to run Laravel Sail on Windows. Please ensure:\n1. WSL2 is installed (run "wsl --install")\n2. Docker Desktop is configured to use WSL2 backend\n3. Your terminal has access to WSL commands');
         }
     }
 
@@ -163,7 +174,8 @@ export async function runCommand(command: string): Promise<string> {
     const rootPath = workspaceFolders[0].uri.fsPath;
 
     return new Promise((resolve, reject) => {
-        exec(command, { cwd: rootPath }, (error, stdout, stderr) => {
+        const wrappedCommand = wrapCommandForWSL(command);
+        exec(wrappedCommand, { cwd: rootPath }, (error, stdout, stderr) => {
             if (error) {
                 reject(error);
             } else if (stderr) {

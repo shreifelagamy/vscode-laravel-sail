@@ -62,10 +62,19 @@ All commands are accessible through the command palette (`Ctrl+Shift+P` / `Cmd+S
 This extension contributes the following settings:
 
 - `laravelSail.phpPath`: Path to PHP executable (default: "php")
+  - Windows users: Use forward slashes even in Windows paths, e.g., "C:/php/php.exe"
 - `laravelSail.sailPath`: Path to Sail executable (default: "./vendor/bin/sail")
+  - Use relative paths from your project root
 - `laravelSail.composerPath`: Path to Composer executable (default: "composer")
+  - Windows users: Consider using the WSL Composer installation
 - `laravelSail.artisanPath`: Path to Artisan executable (default: "artisan")
+  - Use relative paths from your project root
 - `laravelSail.checkInterval`: Interval to check sail status in milliseconds (default: 5000)
+
+Note for Windows Users:
+- All paths are automatically converted to WSL paths when needed
+- Using WSL's built-in PHP and Composer is recommended for best compatibility
+- Avoid using Windows-specific absolute paths
 
 ## Usage
 
@@ -100,11 +109,37 @@ Each container can be managed with operations:
 
 ## Troubleshooting
 
-### Windows Users
-- Ensure WSL2 is properly installed and configured
-- Docker Desktop must be running with WSL2 backend
+### Windows Setup Guide
+1. Install WSL2:
+   ```powershell
+   wsl --install
+   ```
+   After installation, restart your computer.
 
-### Common Issues
+2. Configure Docker Desktop:
+   - Install Docker Desktop for Windows
+   - Open Docker Desktop Settings
+   - Navigate to 'Resources' > 'WSL Integration'
+   - Enable 'Use WSL 2 based engine'
+   - Enable integration with your Linux distro
+   - Click 'Apply & Restart'
+
+3. Verify Setup:
+   ```powershell
+   # Check WSL version
+   wsl -l -v
+   # Should show "VERSION 2" for your distro
+
+   # Verify Docker in WSL
+   wsl docker --version
+   ```
+
+4. Configure VSCode:
+   - Install 'Remote - WSL' extension
+   - Open your Laravel project in WSL
+   - Make sure Docker Desktop is running
+
+### Common Issues and Solutions
 - If containers aren't showing up, check if Docker is running
 - For permission issues, ensure proper Docker configuration
 - WSL2 is required for Windows users
