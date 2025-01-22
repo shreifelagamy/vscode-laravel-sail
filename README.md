@@ -1,4 +1,4 @@
-# Laravel Sail for VSCode
+# Support Laravel sail in vscode
 
 ![Laravel Sail](images/icon.png)
 
